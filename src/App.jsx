@@ -1,54 +1,53 @@
 import './App.css';
-import {Button, Card, Footer, Label} from "flowbite-react";
-import {useState} from "react";
+import {Card, Footer, Label} from "flowbite-react";
+import {useEffect, useState} from "react";
 
-function sortear(quantos) {
-  const numeros = [];
-  while (quantos > 0) {
-    const novo = Math.floor(Math.random() * 60 + 1);
-    if (numeros.includes(novo)) continue;
-    numeros.push(novo);
-    quantos -= 1;
-  }
-  numeros.sort((a, b) => (a > b ? +1 : -1));
-  return numeros;
-}
 export default function App() {
-  const [quantos, setQuantos] = useState(6);
-  const [range, setRange] = useState(6);
-  const rangeConvertido = Math.floor(60 * range / 100);
-  const [numeros, setNumeros] = useState([]);
+  const [cep, setCep] = useState('');
+  const [endereco, setEndereco] = useState({});
+
+  useEffect(() => {
+    if (cep.length === 8) {
+      fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+          setEndereco(data);
+        });
+    } else {
+      setEndereco({});
+    }
+  }, [cep])
 
   return (
     <>
       <main className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-center text-4xl">Mega Sena</h1>
+        <h1 className="text-center text-4xl">Endereço</h1>
         <Label
-          htmlFor="quantos"
-          value={`Números para sortear entre 0 e 60: ${rangeConvertido}`}
+          htmlFor="cep"
+          value="CEP (somente números)"
         />
-        <input id="quantos"
-               type="range"
-               value={range}
+        <input id="cep"
+               type="number"
+               value={cep}
                onChange={({target: {value}}) => {
-                 setRange(parseInt(value));
+                 setCep(value);
                }}
-               className="max-w-xl h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 my-4"
+               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         />
-        <Button
-          type="button"
-          onClick={() => {
-            setQuantos(rangeConvertido);
-            setNumeros(sortear(rangeConvertido));
-          }}>Sortear</Button>
 
-        {numeros.length > 0 && (
+        {Object.keys(endereco).length > 0 && (
           <Card className="max-w-2xl">
             <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Resultado
+              Endereço
             </h2>
             <p className="font-normal text-gray-700 dark:text-gray-400 text-right">
-              {numeros.join(', ')}
+              Logradouro: {endereco.logradouro}
+              <br/>
+              Bairro: {endereco.bairro}
+              <br/>
+              Cidade: {endereco.localidade}
+              <br/>
+              UF: {endereco.uf}
             </p>
           </Card>
         )}
